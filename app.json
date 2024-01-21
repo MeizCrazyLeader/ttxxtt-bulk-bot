@@ -27,4 +27,11 @@
   },
   "scripts": {
     "start": "main.py"
+    "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "basic"
+    }
+  }
+  }
   }
