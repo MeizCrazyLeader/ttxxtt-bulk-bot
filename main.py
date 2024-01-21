@@ -41,3 +41,36 @@ def download_files(update: Update, context: CallbackContext):
         update.message.reply_text(f"Downloading file {i+1}: {link}")
 
     os.remove(file_path)
+
+
+def app_json():
+    """Generates app.json for Heroku deployment"""
+    app_data = {
+        "Container": "Heroku",
+        "Size": "Basic",
+        "Quantity": "1"
+    }
+    with open("app.json", "w") as file:
+        json.dump(app_data, file, indent=4)
+
+
+def main():
+    # Telegram Bot API credentials
+    API_ID = "your_api_id"
+    API_HASH = "your_api_hash"
+    TOKEN = "your_bot_token"
+
+    app_json()
+
+    updater = Updater(token=TOKEN, use_context=True)
+    dp = updater.dispatcher
+
+    dp.add_handler(CommandHandler("start", start))
+    dp.add_handler(CommandHandler("download", download_files))
+
+    updater.start_polling()
+    updater.idle()
+
+
+if __name__ == '__main__':
+    main()
