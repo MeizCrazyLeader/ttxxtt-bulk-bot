@@ -27,6 +27,8 @@
   },
   "scripts": {
     "start": "main.py"
+  }
+}
     {
       "formation": {
         "web": {
