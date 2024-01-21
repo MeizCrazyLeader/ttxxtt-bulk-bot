@@ -27,11 +27,11 @@
   },
   "scripts": {
     "start": "main.py"
-    "formation": {
-    "web": {
-      "quantity": 1,
-      "size": "basic"
-    }
-  }
-  }
+    {
+      "formation": {
+        "web": {
+          "quantity": 1,
+          "size": "basic"
+        }
+      }
   }
