@@ -1,58 +1,43 @@
-import telegram
-import requests
+import os
+import json
+from telegram import Update, ParseMode
+from telegram.ext import Updater, CommandHandler, CallbackContext
 
-# Set up your bot with API id and hash
-api_id = 'YOUR_API_ID'
-api_hash = 'YOUR_API_HASH'
-bot_token = 'YOUR_BOT_TOKEN'
 
-# Create an instance of the Telegram bot
-bot = telegram.Bot(token=bot_token)
+def start(update: Update, context: CallbackContext):
+    """Bot start command handler"""
+    update.message.reply_text(
+        "Welcome to the Bulk File Downloader Bot!\n"
+        "Please send me the text file containing links or send links line by line directly."
+    )
 
-# Function to handle incoming messages
-def handle_message(update, context):
-    message = update.message
 
-    # Check if the message contains any links
-    urls = get_urls_from_message(message)
-    if urls:
-        for url in urls:
-            download_file(url, message.chat_id)
-    else:
-        message.reply_text('No download links found.')
+def download_files(update: Update, context: CallbackContext):
+    """Handle the file(s) download"""
+    message = update.effective_message
+    chat_id = update.effective_chat.id
 
-# Function to extract URLs from a text message
-def get_urls_from_message(message):
-    entities = message.entities
-    urls = []
-    if entities:
-        for entity in entities:
-            if entity.type == 'url':
-                urls.append(message.text[entity.offset:entity.offset + entity.length])
-    return urls
+    if message.document:
+        file = context.bot.get_file(message.document.file_id)
+        file.download(f"links_{chat_id}.txt")
+    elif message.text:
+        lines = message.text.strip().split("\n")
+        with open(f"links_{chat_id}.txt", "w") as file:
+            file.write("\n".join(lines))
 
-# Function to download a file from a given URL
-def download_file(url, chat_id):
-    filename = url.split('/')[-1]
-    response = requests.get(url, stream=True)
+    file_path = f"links_{chat_id}.txt"
+    
+    with open(file_path, "r") as file:
+        links = file.readlines()
 
-    # Save the file to disk
-    with open(filename, 'wb') as file:
-        for chunk in response.iter_content(chunk_size=128):
-            file.write(chunk)
+    for i, link in enumerate(links):
+        # Perform download logic for each link
+        # example: download(link.strip())
 
-    # Send the file to the Telegram chat
-    with open(filename, 'rb') as file:
-        bot.send_document(chat_id, document=file)
+        # Replace the download function above with custom logic
+        # based on your downloading requirements
+        # You may use libraries like 'requests' for HTTP downloads
 
-    # Remove the temporarily saved file
-    os.remove(filename)
+        update.message.reply_text(f"Downloading file {i+1}: {link}")
 
-# Set up the bot's message handler
-from telegram.ext import MessageHandler, Filters, Updater
-updater = Updater(bot=bot, use_context=True)
-dispatcher = updater.dispatcher
-dispatcher.add_handler(MessageHandler(Filters.text, handle_message))
-
-# Start the bot
-updater.start_polling()
+    os.remove(file_path)
