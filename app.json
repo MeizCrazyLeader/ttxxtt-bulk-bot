@@ -1,7 +1,7 @@
 {
-  "name": " ttxxtt-bulk-bot",
+  "name": "ttxxtt-bulk-bot",
   "description": "Telegram bot for bulk downloading files",
-  "repository": "https://github.com/MeizCrazyLeader/ttxxtt-bulk-bot",
+  "repository": "https://github.com/MeizCrazyLeader/ttxxtt-bulk-bot.git",
   "keywords": ["telegram", "python", "heroku"],
   "addons": [
     "heroku-postgresql"
@@ -27,13 +27,11 @@
   },
   "scripts": {
     "start": "main.py"
+  },
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "basic"
+    }
   }
 }
-    {
-      "formation": {
-        "web": {
-          "quantity": 1,
-          "size": "basic"
-        }
-      }
-  }
