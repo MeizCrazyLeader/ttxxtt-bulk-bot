@@ -1,76 +1,36 @@
-import os
-import json
-from telegram import Update, ParseMode
-from telegram.ext import Updater, CommandHandler, CallbackContext
+import re
+import requests
+from telethon.sync import TelegramClient
+from telethon import functions
 
+def extract_links(input_url, output_file, excluded_extensions):
+    response = requests.get(input_url)
+    text = response.text
 
-def start(update: Update, context: CallbackContext):
-    """Bot start command handler"""
-    update.message.reply_text(
-        "Welcome to the Bulk File Downloader Bot!\n"
-        "Please send me the text file containing links or send links line by line directly."
-    )
-
-
-def download_files(update: Update, context: CallbackContext):
-    """Handle the file(s) download"""
-    message = update.effective_message
-    chat_id = update.effective_chat.id
-
-    if message.document:
-        file = context.bot.get_file(message.document.file_id)
-        file.download(f"links_{chat_id}.txt")
-    elif message.text:
-        lines = message.text.strip().split("\n")
-        with open(f"links_{chat_id}.txt", "w") as file:
-            file.write("\n".join(lines))
-
-    file_path = f"links_{chat_id}.txt"
+    links = re.findall(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', text)
     
-    with open(file_path, "r") as file:
-        links = file.readlines()
+    filtered_links = [link for link in links if not any(extension in link for extension in excluded_extensions)]
+    
+    with open(output_file, 'w') as file:
+        file.write('\n'.join(filtered_links))
 
-    for i, link in enumerate(links):
-        # Perform download logic for each link
-        # example: download(link.strip())
+    print(f"✅ Links Extracted")
 
-        # Replace the download function above with custom logic
-        # based on your downloading requirements
-        # You may use libraries like 'requests' for HTTP downloads
+# Set up Telegram bot credentials
+api_id = '18429621'
+api_hash = '2034b81303744d1dd2c7ffc02e21cfe2'
+bot_token = '6712155081:AAF_1L4eOuJ0h9cPIGBijv1r-7Hbbt6ZR2I'
 
-        update.message.reply_text(f"Downloading file {i+1}: {link}")
+# Example usage
+input_url = input("📤 Enter Direct Link of TXT File: ")
+output_file = 'ace.txt'
+excluded_extensions = ['.html', '.srt', '.txt', '.png', '.jpg', '.jpeg', '.url', '.nfo', '.webp']  # Add the extensions you want to exclude in this list
 
-    os.remove(file_path)
+extract_links(input_url, output_file, excluded_extensions)
 
+# Upload the file to Telegram using the bot
+with TelegramClient('bot', api_id, api_hash) as client:
+    client.send_file('your_channel_username', output_file)
 
-def app_json():
-    """Generates app.json for Heroku deployment"""
-    app_data = {
-        "Container": "Heroku",
-        "Size": "Basic",
-        "Quantity": "1"
-    }
-    with open("app.json", "w") as file:
-        json.dump(app_data, file, indent=4)
-
-
-def main():
-    # Telegram Bot API credentials
-    API_ID = "your_api_id"
-    API_HASH = "your_api_hash"
-    TOKEN = "your_bot_token"
-
-    app_json()
-
-    updater = Updater(token=TOKEN, use_context=True)
-    dp = updater.dispatcher
-
-    dp.add_handler(CommandHandler("start", start))
-    dp.add_handler(CommandHandler("download", download_files))
-
-    updater.start_polling()
-    updater.idle()
-
-
-if __name__ == '__main__':
-    main()
+print("📝 Conversion Completed 🎉")
+print(f"📩 File uploaded to Telegram channel")
